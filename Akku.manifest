@@ -1,0 +1,12 @@
+#!r6rs ; -*- mode: scheme; coding: utf-8 -*-
+(import (akku format manifest))
+
+(akku-package ("fuckaround" "0.0.0-alpha.0")
+  (synopsis "I did not edit Akku.manifest")
+  (description
+   "Please change the synopsis and description before publish the package."
+   "Multiple strings in the description will become separate paragraphs.")
+  (authors "sigkill")
+  (license "NOASSERTION")
+  (depends ("akku-r7rs" "^1.0.1") ((srfi 64) "^2025.8.27"))
+)
