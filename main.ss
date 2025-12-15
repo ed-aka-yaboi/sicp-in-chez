@@ -275,8 +275,8 @@
 (define (fast-prime-miller-rabin? n times) (fast-prime? n times miller-rabin-test))
 
 (import (srfi :64))
-(test-runner-reset (test-runner-get))
 
+(test-runner-reset (test-runner-create))
 (test-begin "miller rabin primality testing")
 
 ;; carmichaels
@@ -301,3 +301,49 @@
 (test-assert (fast-prime-miller-rabin? 100043 10))
 
 (test-end "miller rabin primality testing")
+
+
+(trace-define (sum term a next b)
+  (if (> a b)
+      0
+      (+ (term a) (sum term (next a) next b))))
+
+(define (integral f a b n)
+  (define h (/ (- b a) n))
+  (define y0 a)
+  (define yn (+ a (* n h)))
+  (define (term x) (* 2 (f x)))
+  (define (next x) (+ x h))
+  (define y-all (sum term (+ a h) next b))
+  (define y-odd (sum term (+ a h) (lambda (x) (next (next x))) b))
+
+  (* (/ h 3) (+ y0 y-all y-odd yn)))
+
+(define (cube x) (* x x x))
+
+
+(trace-define (sum term a next b)
+  (trace-define (iter a result)
+    (if (> a b)
+        result
+        (iter (next a) (+ (term a) result))))
+
+  (iter a 0))
+
+(define (product term a next b)
+  (if (> a b)
+      1
+      (* (term a) (product term (next a) next b))))
+
+(define (identity x) x)
+(define (factorial n)
+  (define (add1 x) (+ x 1))
+  (product identity 1 add1 n))
+
+(trace-define (pi n)
+  (define (numerator-series x) (+ 2 (* 2 (quotient x 2))))
+  (define (denominator-series x) (+ 3 (* 2 (quotient x 2))))
+  (define numerator (product numerator-series 1 add1 n))
+  (define denominator (product denominator-series 0 add1 (-n 1)))
+
+  (* 4 (/ numerator denominator)))
