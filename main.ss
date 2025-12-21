@@ -343,6 +343,25 @@
 
   (iter a 1))
 
+(trace-define (accumulate f base-case)
+  (trace-define (acc term a next b)
+    (if (> a b)
+        base-case
+        (f (term a) (acc term (next a) next b))))
+  acc)
+
+(trace-define (accumulate f base-case)
+  (trace-define (acc term a next b)
+    (trace-define (iter a result)
+      (if (> a b)
+          result
+          (iter (next a) (f (term a) result))))
+    (iter a base-case))
+  acc)
+
+(trace-define sum (accumulate + 0))
+(trace-define product (accumulate * 1))
+
 (define (identity x) x)
 (define (factorial n)
   (define (add1 x) (+ x 1))
@@ -355,3 +374,22 @@
   (define denominator (product denominator_series 0 add1 (- n 1)))
 
   (* 4 (/ numerator denominator)))
+
+(define (filtered-accumulate f null-case term filter next)
+  (define (filtered-term x)
+    (if (filter x)
+        (term x)
+        null-case))
+  (define (acc a b)
+    (if (> a b)
+        null-case
+        (f (filtered-term a) (acc (next a) b))))
+  acc)
+
+(define (sum-squares-of-primes a b)
+  ((filtered-accumulate + 0 square prime? add1) a b))
+
+(define (product-of-coprime-smaller-naturals n)
+  (define (is-coprime? x)
+    (= (gcd x n) 1))
+  ((filtered-accumulate * 1 identity is-coprime? add1) 1 (- n 1)))
