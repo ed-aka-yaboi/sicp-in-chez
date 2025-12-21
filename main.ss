@@ -276,7 +276,6 @@
 
 (import (srfi :64))
 
-(test-runner-reset (test-runner-create))
 (test-begin "miller rabin primality testing")
 
 ;; carmichaels
@@ -301,6 +300,7 @@
 (test-assert (fast-prime-miller-rabin? 100043 10))
 
 (test-end "miller rabin primality testing")
+(test-runner-reset (test-runner-get))
 
 
 (trace-define (sum term a next b)
@@ -330,10 +330,18 @@
 
   (iter a 0))
 
-(define (product term a next b)
+(trace-define (product term a next b)
   (if (> a b)
       1
       (* (term a) (product term (next a) next b))))
+
+(trace-define (product term a next b)
+  (define (iter a result)
+    (if (> a b)
+        result
+        (iter (next a) (* (term a) result))))
+
+  (iter a 1))
 
 (define (identity x) x)
 (define (factorial n)
@@ -341,9 +349,9 @@
   (product identity 1 add1 n))
 
 (trace-define (pi n)
-  (define (numerator-series x) (+ 2 (* 2 (quotient x 2))))
-  (define (denominator-series x) (+ 3 (* 2 (quotient x 2))))
-  (define numerator (product numerator-series 1 add1 n))
-  (define denominator (product denominator-series 0 add1 (-n 1)))
+  (define (numerator_series x) (+ 2 (* 2 (quotient x 2))))
+  (define (denominator_series x) (+ 3 (* 2 (quotient x 2))))
+  (define numerator (product numerator_series 1 add1 n))
+  (define denominator (product denominator_series 0 add1 (- n 1)))
 
   (* 4 (/ numerator denominator)))
